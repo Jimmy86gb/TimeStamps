@@ -55,8 +55,8 @@ public class Node {
         }
 
         // Delega la aplicación matemática a la data de los hijos
-        this.left.data.applyLazy(this.data.lazy, leftRangeSize);
-        this.right.data.applyLazy(this.data.lazy, rightRangeSize);
+        this.left.data.applyLazy(this.data.getLazy(), leftRangeSize);
+        this.right.data.applyLazy(this.data.getLazy(), rightRangeSize);
 
         // Limpia su propia tarea pendiente una vez delegada
         this.data.clearTasks();

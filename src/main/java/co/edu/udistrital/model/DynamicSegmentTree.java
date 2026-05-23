@@ -141,7 +141,7 @@ public class DynamicSegmentTree {
         
         // Solape total: Devuelve la sumatoria sin seguir descendiendo
         if (qL <= L && R <= qR){
-            return node.data.value;
+            return node.data.getValue();
         } 
         
         long mid = L + (R - L) / 2;

@@ -1,102 +1,138 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="co.edu.udistrital.model.Node"%>
 <%@page import="co.edu.udistrital.model.DynamicSegmentTree"%>
 
-<%! 
-    public void drawTree(jakarta.servlet.jsp.JspWriter out, Node node, long L, long R) throws java.io.IOException {
-        if (node == null) return;
-        out.print("<li>");
-        out.print("<span class='node-box'>[ " + L + " - " + R + " ]<br/>");
-        
-        // ¡CAMBIO AQUÍ! Ahora leemos la información desde el objeto 'data'
-        out.print("<b>Suma: " + node.data.value + "</b><br/>");
-        if (node.data.lazy > 0) {
-            out.print("<span class='lazy-tag'>Lazy: +" + node.data.lazy + "</span>");
-        }
-        
-        out.print("</span>");
-        if (node.left != null || node.right != null) {
-            out.print("<ul>");
-            long mid = L + (R - L) / 2;
-            drawTree(out, node.left, L, mid);
-            drawTree(out, node.right, mid + 1, R);
-            out.print("</ul>");
-        }
-        out.print("</li>");
-    }
-%>
-
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Segment Tree Dinámico - Mapa Interactivo</title>
+    <meta charset="UTF-8">
+    <title>Dynamic Segment Tree</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="main-container">
-        <div class="forms-wrapper">
-            <div class="panel" style="border-top-color: #ff9800;">
-                <% if(request.getAttribute("error") != null) { %> <div class="alert alert-error"><b><%= request.getAttribute("error") %></b></div> <% } %>
-                <h3>0. Crear Servidor</h3>
-                <form action="TrafficServlet" method="POST">
+    <div class="dashboard-container">
+        
+        <header class="dashboard-header">
+            <div class="brand">
+                <h1>TRAFFIC ANALYZER</h1>
+            </div>
+        </header>
+
+        <div class="workspace-grid">
+            
+            <div class="control-box">
+                <div class="tabs-forms">
+                    <h3>Panel de Estructura Inicial</h3>
+                </div>
+                
+                <form action="TrafficServlet" method="POST" class="form-dark">
                     <input type="hidden" name="action" value="initTree">
-                    <label>Límite Inferior:</label>
-                    <input type="number" name="minRango" value="1" required>
-                    <label>Límite Superior:</label>
-                    <input type="number" name="maxRango" value="1000000" required>
-                    <button type="submit" style="background: #ff9800;">Construir Rango</button>
+                    <div class="inline-inputs">
+                        <input type="number" name="minRango" placeholder="Min Rango" value="1" required>
+                        <input type="number" name="maxRango" placeholder="Max Rango" value="100000" required>
+                    </div>
+                    <button type="submit" class="btn-cyan">Inicializar Estructura</button>
                 </form>
-            </div>
 
-            <div class="panel">
-                <% if(request.getAttribute("message") != null) { %> <div class="alert"><%= request.getAttribute("message") %></div> <% } %>
-                <h3>1. Añadir Tráfico</h3>
-                <form action="TrafficServlet" method="POST">
+                <form action="TrafficServlet" method="POST" class="form-dark">
                     <input type="hidden" name="action" value="updateRange">
-                    <label>Desde ms:</label><input type="number" name="uStart" required>
-                    <label>Hasta ms:</label><input type="number" name="uEnd" required>
-                    <label>MB por ms:</label><input type="number" name="traffic" required>
-                    <button type="submit">Actualizar (Lazy)</button>
+                    <div class="inline-inputs">
+                        <input type="number" name="uStart" placeholder="Desde ms" required>
+                        <input type="number" name="uEnd" placeholder="Hasta ms" required>
+                    </div>
+                    <input type="number" name="traffic" placeholder="Carga (MB)" required>
+                    <button type="submit" class="btn-amber">Ejecutar Update (Lazy)</button>
                 </form>
             </div>
 
-            <div class="panel" style="border-top-color: #4caf50;">
-                <% if(request.getAttribute("queryResult") != null) { %> <div class="alert" style="border-color: #4caf50; color: #4caf50;"><b><%= request.getAttribute("queryResult") %></b></div> <% } %>
-                <h3>2. Consultar Suma</h3>
-                <form action="TrafficServlet" method="POST">
+            <div class="control-box">
+                <h3>Panel de Búsqueda</h3>
+                <form action="TrafficServlet" method="POST" class="form-dark">
                     <input type="hidden" name="action" value="queryRange">
-                    <label>Desde ms:</label><input type="number" name="qStart" required>
-                    <label>Hasta ms:</label><input type="number" name="qEnd" required>
-                    <button type="submit" style="background: #4caf50;">Calcular Tráfico</button>
+                    <div class="inline-inputs">
+                        <input type="number" name="qStart" placeholder="Desde ms" required>
+                        <input type="number" name="qEnd" placeholder="Hasta ms" required>
+                    </div>
+                    <button type="submit" class="btn-green">Lanzar Query de Rango</button>
                 </form>
+            </div>
+
+            <div class="control-box summary-panel">
+                <h3>Resumen de la Operación</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Comando Ejecutado:</span>
+                    <span class="stat-value text-cyan"><%= request.getAttribute("summaryAction") != null ? request.getAttribute("summaryAction") : "Ninguno" %></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Intervalo Afectado:</span>
+                    <span class="stat-value"><%= request.getAttribute("summaryRange") != null ? request.getAttribute("summaryRange") : "N/A" %></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Complejidad Temporal:</span>
+                    <span class="stat-value text-amber"><%= request.getAttribute("summaryComplexity") != null ? request.getAttribute("summaryComplexity") : "O(1)" %></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Estado de Ramas:</span>
+                    <span class="stat-value text-green"><%= request.getAttribute("summaryStatus") != null ? request.getAttribute("summaryStatus") : "Estable" %></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Salida del Query:</span>
+                    <span class="stat-value text-green">
+                        <%= request.getAttribute("queryResult") != null ? request.getAttribute("queryResult") : "No se ha ejecutado" %>
+                    </span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Aviso del Sistema:</span>
+                    <span class="stat-value">
+                        <% 
+                        if (request.getAttribute("error") != null) { 
+                        %>
+                            <span style="color: var(--color-red);"><%= request.getAttribute("error") %></span>
+                        <% 
+                        } else if (request.getAttribute("message") != null) { 
+                        %>
+                            <span style="color: var(--color-cyan);"><%= request.getAttribute("message") %></span>
+                        <% 
+                        } else { 
+                        %>
+                            <span style="color: var(--text-secondary);">En espera...</span>
+                        <% 
+                        } 
+                        %>
+                    </span>
+                </div>
             </div>
         </div>
 
-        <div>
-            <div class="toolbar">
-                <span style="font-weight: bold;">Controles de Vista: </span>
-                <button class="btn-zoom" onclick="zoomIn()">Zoom (+)</button>
-                <button class="btn-zoom" onclick="zoomOut()">Zoom (-)</button>
-                <button class="btn-zoom" onclick="resetZoom()">Restablecer</button>
+        <div class="canvas-box">
+            <div class="canvas-header">
+                <span class="title">Arbol</span>
+                <div class="controls">
+                    <button onclick="zoomIn()">Zoom +</button>
+                    <button onclick="zoomOut()">Zoom -</button>
+                    <button onclick="resetZoom()" class="btn-border">Reset</button>
+                </div>
             </div>
             
             <div class="tree-viewport" id="viewport">
                 <div class="zoom-container" id="tree-container">
                     <ul class="tree">
                         <%
-                            DynamicSegmentTree tree = (DynamicSegmentTree) session.getAttribute("segmentTree");
-                            if (tree != null && tree.getRoot() != null) {
-                                drawTree(out, tree.getRoot(), tree.getMinVal(), tree.getMaxVal());
+                            if (request.getAttribute("htmlTree") != null) {
+                                out.print(request.getAttribute("htmlTree"));
                             } else {
-                                out.print("<p style='text-align:center;'>Configura el rango en el Panel 0 para comenzar.</p>");
+                        %>
+                                <div class="welcome-msg">
+                                    <p>INICIALICE EL RANGO PARA ANALIZAR LOS NODOS DINÁMICOS</p>
+                                </div>
+                        <%
                             }
                         %>
                     </ul>
                 </div>
             </div>
         </div>
-    </div>
 
+    </div>
     <script src="js/script.js"></script>
 </body>
 </html>

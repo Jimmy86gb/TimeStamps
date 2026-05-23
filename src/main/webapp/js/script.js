@@ -2,9 +2,12 @@ const viewport = document.getElementById('viewport');
 const treeContainer = document.getElementById('tree-container');
 
 let isDragging = false;
-let currentX = 0, currentY = 0;
-let initialX = 0, initialY = 0;
-let xOffset = 0, yOffset = 0;
+let currentX = 0;
+let currentY = 0;
+let initialX = 0;
+let initialY = 0;
+let xOffset = 0;
+let yOffset = 0;
 let currentScale = 1;
 
 viewport.addEventListener("mousedown", dragStart);
@@ -20,7 +23,9 @@ function dragStart(e) {
 }
 
 function dragEnd(e) {
-    if (!isDragging) return;
+    if (!isDragging) {
+        return;
+    }
     initialX = currentX;
     initialY = currentY;
     isDragging = false;
@@ -40,24 +45,35 @@ function drag(e) {
 }
 
 function applyTransform() {
-    treeContainer.style.transform = "translate(" + currentX + "px, "
-            + currentY + "px) scale(" + currentScale + ")";
+    treeContainer.style.transform = "translate(" + currentX + "px, " + currentY + "px) scale(" + currentScale + ")";
 }
 
 function zoomIn() { 
-    currentScale += 0.15; applyTransform();
+    currentScale += 0.15; 
+    applyTransform();
 }
+
 function zoomOut() { 
-    if (currentScale > 0.2){ 
-        currentScale -= 0.15; applyTransform();
+    if (currentScale > 0.2) { 
+        currentScale -= 0.15; 
+        applyTransform();
     } 
 }
+
 function resetZoom() {
-    currentScale = 1; currentX = 0; currentY = 0; xOffset = 0; yOffset = 0;
+    currentScale = 1; 
+    currentX = 0; 
+    currentY = 0; 
+    xOffset = 0; 
+    yOffset = 0;
     applyTransform();
 }
 
 viewport.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (e.deltaY < 0) zoomIn(); else zoomOut();
+    if (e.deltaY < 0) {
+        zoomIn();
+    } else {
+        zoomOut();
+    }
 });

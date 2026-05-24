@@ -1,5 +1,6 @@
 package co.edu.udistrital.controller;
 
+import co.edu.udistrital.util.TreeRenderer;
 import co.edu.udistrital.model.DynamicSegmentTree;
 import java.io.IOException;
 

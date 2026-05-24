@@ -1,4 +1,4 @@
-package co.edu.udistrital.controller;
+package co.edu.udistrital.util;
 import co.edu.udistrital.model.Node;
 
 /**
